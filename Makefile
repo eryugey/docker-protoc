@@ -23,3 +23,9 @@ push-latest:
 .PHONY: tag-latest
 tag-latest:
 	bash ./build.sh true
+
+.PHONY: build-kangaroo
+build-kangaroo:
+	DOCKER_REPO=kangaroo-registry.cn-hangzhou.cr.aliyuncs.com \
+	NAMESPACE=/utils BUILDS=protoc-all BUILD_VERSION=1 \
+	bash ./build.sh

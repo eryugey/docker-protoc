@@ -5,6 +5,7 @@ ARG go_envoyproxy_pgv_version
 ARG go_mwitkow_gpv_version
 ARG go_protoc_gen_go_version
 ARG go_protoc_gen_go_grpc_version
+ARG go_protoc_gen_go_ttrpc_version
 
 FROM golang:$go_version-$debian_version AS build
 
@@ -14,6 +15,7 @@ ARG go_envoyproxy_pgv_version
 ARG go_mwitkow_gpv_version
 ARG go_protoc_gen_go_version
 ARG go_protoc_gen_go_grpc_version
+ARG go_protoc_gen_go_ttrpc_version
 
 RUN set -ex && apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -49,6 +51,7 @@ RUN mkdir -p /usr/local/include/google/protobuf && \
 
 # go install go-related bins
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@${go_protoc_gen_go_grpc_version}
+RUN go install github.com/containerd/ttrpc/cmd/protoc-gen-go-ttrpc@${go_protoc_gen_go_ttrpc_version}
 
 RUN go install github.com/gogo/protobuf/protoc-gen-gogo@latest
 RUN go install github.com/gogo/protobuf/protoc-gen-gogofast@latest
@@ -99,6 +102,9 @@ COPY --from=build /tmp/grpc/bazel-bin/src/compiler/ /usr/local/bin/
 COPY --from=build /tmp/grpc/bazel-bin/test/cpp/util/ /usr/local/bin/
 
 COPY --from=build /go/bin/* /usr/local/bin/
+
+# ttrpc requires protoc-gen-ttrpc not protoc-gen-go-ttprc
+RUN ln /usr/local/bin/protoc-gen-go-ttrpc /usr/local/bin/protoc-gen-ttrpc
 
 COPY --from=build /go/pkg/mod/github.com/envoyproxy/protoc-gen-validate@v${go_envoyproxy_pgv_version}/ /opt/include/
 

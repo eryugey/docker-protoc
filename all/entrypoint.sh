@@ -43,6 +43,7 @@ printUsage() {
     echo " --grpc-out                                       This option allows overriding the left-half of the 'grpc_out=' argument (before the colon) with grpc-node and grpc-web code generation. Options are: generate_package_definition, grpc_js or grpc(depricated from April 2021). Defaults to grpc_js."
     echo " --grpc-web-out                                   This option overrides the 'grpc-web_out=' argument in the grpc-web code generation.  Defaults to 'import_style=typescript'."
     echo " --ts_opt                                         The options to pass to protoc to customize the typescript code generation. See https://github.com/stephenh/ts-proto#supported-options. --ts_opt useOptionals=messages will evaluate to --ts_proto_opt=useOptionals=messages"
+    echo " --ttrpc                                          The options to generate ttrpc code not grpc. Only work with go"
 }
 
 GEN_GATEWAY=false
@@ -76,6 +77,7 @@ JS_OUT="import_style=commonjs"
 WEB_OUT="import_style=typescript"
 GRPC_OUT="grpc_js"
 TYPESCRIPT_OPT=""
+USE_TTRPC=false
 while test $# -gt 0; do
     case "$1" in
         -h|--help)
@@ -248,6 +250,10 @@ while test $# -gt 0; do
             TYPESCRIPT_OPT=$1
             shift
             ;;
+        --ttrpc)
+            USE_TTRPC=true
+            shift
+            ;;
         *)
             break
             ;;
@@ -346,8 +352,12 @@ fi
 GEN_STRING=''
 case $GEN_LANG in
     "go")
-        GEN_STRING="--go_out=$OUT_DIR --go_opt=${GO_SOURCE_RELATIVE}${GO_MODULE_PREFIX}${GO_PACKAGE_MAP}\
-            --go-grpc_out=$OUT_DIR --go-grpc_opt=${GO_SOURCE_RELATIVE}${GO_MODULE_PREFIX}${GO_PACKAGE_MAP}${GO_GRPC_REQUIRE_UNIMPLEMENTED_SERVERS}"
+        GEN_STRING="--go_out=$OUT_DIR --go_opt=${GO_SOURCE_RELATIVE}${GO_MODULE_PREFIX}${GO_PACKAGE_MAP}"
+        if $USE_TTRPC; then
+                GEN_STRING+=" --go-ttrpc_out=$OUT_DIR --go-ttrpc_opt=${GO_SOURCE_RELATIVE}${GO_MODULE_PREFIX}${GO_PACKAGE_MAP}${GO_GRPC_REQUIRE_UNIMPLEMENTED_SERVERS}"
+        else
+                GEN_STRING+=" --go-grpc_out=$OUT_DIR --go-grpc_opt=${GO_SOURCE_RELATIVE}${GO_MODULE_PREFIX}${GO_PACKAGE_MAP}${GO_GRPC_REQUIRE_UNIMPLEMENTED_SERVERS}"
+        fi
         if [[ ${GO_PLUGIN} == "micro" ]]; then
           GEN_STRING="$GEN_STRING --micro_out=$OUT_DIR"
         fi

@@ -3,7 +3,7 @@ set -e
 
 source ./variables.sh
 
-for build in ${BUILDS[@]}; do
+for build in ${BUILDS}; do
     tag=${CONTAINER}/${build}:${VERSION}
     echo "building ${build} container with tag ${tag}"
     docker build -t ${tag} \
@@ -15,6 +15,7 @@ for build in ${BUILDS[@]}; do
         --build-arg go_mwitkow_gpv_version="${GO_MWITKOW_GPV_VERSION}" \
         --build-arg go_protoc_gen_go_version="${GO_PROTOC_GEN_GO_VERSION}" \
         --build-arg go_protoc_gen_go_grpc_version="${GO_PROTOC_GEN_GO_GRPC_VERSION}" \
+        --build-arg go_protoc_gen_go_ttrpc_version="${GO_PROTOC_GEN_GO_TTRPC_VERSION}" \
         --target "${build}" \
         .
 
